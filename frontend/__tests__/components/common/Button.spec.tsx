@@ -270,4 +270,21 @@ describe("Button component", () => {
     const button = container.querySelector("button");
     expect(button).toBeDisabled();
   });
+
+  it("applies aria-pressed to toggle buttons", () => {
+    const [pressed, setPressed] = createSignal(false);
+    const { container } = render(() => (
+      <Button
+        onClick={() => setPressed(!pressed())}
+        aria-pressed={pressed()}
+        active={pressed()}
+        fa={{ icon: "fa-stethoscope" }}
+      />
+    ));
+
+    const button = container.querySelector("button");
+    expect(button).toHaveAttribute("aria-pressed", "false");
+    button?.click();
+    expect(button).toHaveAttribute("aria-pressed", "true");
+  });
 });

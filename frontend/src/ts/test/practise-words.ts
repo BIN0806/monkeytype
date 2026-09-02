@@ -29,6 +29,37 @@ export const before: Before = {
   customText: null,
 };
 
+function applyPracticeWords(
+  words: string[],
+  limitValue: number,
+  name: string,
+): void {
+  const mode = before.mode ?? Config.mode;
+  const punctuation = before.punctuation ?? Config.punctuation;
+  const numbers = before.numbers ?? Config.numbers;
+
+  let customText = null;
+  if (Config.mode === "custom") {
+    customText = CustomText.getData();
+  }
+
+  setConfig("mode", "custom", {
+    nosave: true,
+  });
+  CustomText.setPipeDelimiter(true);
+  CustomText.setText(words);
+  CustomText.setLimitMode("section");
+  CustomText.setMode("shuffle");
+  CustomText.setLimitValue(limitValue);
+
+  setCustomTextIndicator({ name, isLong: false });
+
+  before.mode = mode;
+  before.punctuation = punctuation;
+  before.numbers = numbers;
+  before.customText = customText;
+}
+
 export function init(
   missed: "off" | "words" | "biwords",
   slow: boolean,
@@ -150,36 +181,32 @@ export function init(
     }
   });
 
-  const mode = before.mode ?? Config.mode;
-  const punctuation = before.punctuation ?? Config.punctuation;
-  const numbers = before.numbers ?? Config.numbers;
-
-  let customText = null;
-  if (Config.mode === "custom") {
-    customText = CustomText.getData();
-  }
-
-  setConfig("mode", "custom", {
-    nosave: true,
-  });
-  CustomText.setPipeDelimiter(true);
-  CustomText.setText(newCustomText);
-  CustomText.setLimitMode("section");
-  CustomText.setMode("shuffle");
-  CustomText.setLimitValue(
+  applyPracticeWords(
+    newCustomText,
     (sortableSlowWords.length +
       sortableMissedWords.length +
       sortableMissedBiwords.length) *
       5,
+    "practice",
   );
 
-  setCustomTextIndicator({ name: "practice", isLong: false });
+  return true;
+}
 
-  before.mode = mode;
-  before.punctuation = punctuation;
-  before.numbers = numbers;
-  before.customText = customText;
+export function initDiagnostics(words: string[]): boolean {
+  const uniqueWords = [...new Set(words.map((word) => word.trim()))]
+    .filter((word) => word !== "")
+    .slice(0, 20);
+  if (uniqueWords.length === 0) {
+    showNoticeNotification("No diagnostic practice words are available yet");
+    return false;
+  }
 
+  applyPracticeWords(
+    uniqueWords,
+    Math.max(10, uniqueWords.length * 5),
+    "diagnostics",
+  );
   return true;
 }
 

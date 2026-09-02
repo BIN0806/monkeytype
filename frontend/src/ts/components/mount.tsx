@@ -34,6 +34,7 @@ import { Monkey } from "./pages/test/Monkey";
 import { OutOfFocusWarning } from "./pages/test/OutOfFocusWarning";
 import { Premid } from "./pages/test/Premid";
 import { TestConfig } from "./pages/test/TestConfig";
+import { TypingDiagnostics } from "./pages/test/TypingDiagnostics";
 import { Popups } from "./popups/Popups";
 
 const components: Record<string, () => JSXElement> = {
@@ -53,6 +54,7 @@ const components: Record<string, () => JSXElement> = {
   header: () => <Header />,
   devtools: () => <DevTools />,
   testconfig: () => <TestConfig />,
+  typingdiagnostics: () => <TypingDiagnostics />,
   commandlinehotkey: () => <CommandlineHotkey />,
   testmodesnotice: () => <TestModesNotice />,
   capswarning: () => <CapsWarning />,

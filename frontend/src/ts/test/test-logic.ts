@@ -132,6 +132,7 @@ import { isDevEnvironment } from "../utils/env";
 import { EventLog } from "./events/types";
 import { resetModifierState } from "../states/modifiers";
 import { nthElementFromArray } from "../utils/arrays";
+import { captureDiagnosticSession } from "../diagnostics/service";
 
 let failReason = "";
 
@@ -877,6 +878,16 @@ export async function finish(difficultyFailed = false): Promise<void> {
 
   setLastEventLog(eventLog);
   setLastResult(structuredClone(completedEvent));
+  void captureDiagnosticSession(eventLog, {
+    timestamp: completedEvent.timestamp,
+    wpm: completedEvent.wpm,
+    acc: completedEvent.acc,
+    testDuration: completedEvent.testDuration,
+    mode: completedEvent.mode,
+    mode2: completedEvent.mode2,
+    language: completedEvent.language,
+    layout: Config.layout,
+  });
 
   ///////// completed event ready
 
