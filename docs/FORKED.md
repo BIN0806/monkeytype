@@ -31,8 +31,11 @@ The upstream GPL-3.0 license, notices, and Git history remain unchanged.
 
 ## User experience
 
-1. A **local typing diagnostics** panel appears on the test-result page.
-2. Collection is off until the user explicitly enables it.
+1. A **local typing diagnostics** panel appears at the end of the test-result
+   page.
+2. Collection is off until the user explicitly enables it with the
+   stethoscope diagnostics icon. The icon uses Monkeytype's theme variables:
+   the theme's subdued color means off and its main color means on.
 3. After an enabled test finishes, analysis runs in the browser and the result
    is saved locally.
 4. The panel shows the current result, recurring weak patterns, comparisons
@@ -40,8 +43,9 @@ The upstream GPL-3.0 license, notices, and Git history remain unchanged.
 5. **Practice these patterns** starts a shuffled custom test made from relevant
    words in the completed test. A maximum of 20 unique words is used, and the
    practice length is at least 10 words.
-6. The user can pause future collection from the result panel. Pausing does not
-   delete sessions already stored in the browser.
+6. The same icon toggles future collection off. Turning collection off does not
+   delete sessions already stored in the browser. Its tooltip and
+   `aria-pressed` state expose the current action and state to assistive tools.
 
 No Monkeytype account, backend, MongoDB, Redis, or Firebase account is required
 for this feature. Account-dependent Monkeytype features remain separate from
@@ -171,6 +175,7 @@ keyboard behavior and cannot diagnose dyslexia or another condition.
 | --- | --- |
 | `frontend/src/html/pages/test-result.html` | Adds the diagnostics mount point to the result page |
 | `frontend/src/ts/components/mount.tsx` | Registers the SolidJS diagnostics component |
+| `frontend/src/ts/components/common/Button.tsx` | Supports accessible `aria-pressed` state for icon toggle buttons |
 | `frontend/src/ts/test/test-logic.ts` | Starts an asynchronous local capture after a test completes |
 | `frontend/src/ts/test/practise-words.ts` | Reuses practice setup and adds diagnostics-targeted custom practice |
 | `frontend/src/ts/diagnostics/types.ts` | Defines versioned session, profile, comparison, prediction, visualization, and practice types |
@@ -184,6 +189,7 @@ keyboard behavior and cannot diagnose dyslexia or another condition.
 | `frontend/src/ts/components/pages/test/TypingAdvancedDiagnostics.tsx` | Renders the advanced charts, heatmap, network, clusters, outlooks, and recommendations |
 | `frontend/__tests__/diagnostics/analyzer.spec.ts` | Tests event extraction, profiling, comparisons, and practice selection |
 | `frontend/__tests__/diagnostics/advanced-analyzer.spec.ts` | Tests prediction, hesitation, input balance, error clustering, cascades, forecasts, and recommendations |
+| `frontend/__tests__/components/common/Button.spec.tsx` | Tests reactive accessibility state for toggle buttons |
 | `docs/FORKED.md` | Records the fork's behavior, data use, calculations, limitations, files, and verification |
 
 ## Validation completed
@@ -191,13 +197,16 @@ keyboard behavior and cannot diagnose dyslexia or another condition.
 The implementation was checked with the repository-pinned Node 24.11.0 and pnpm
 11.21.0 versions.
 
-- Frontend test suite: **56 files and 1,083 tests passed**.
+- Frontend test suite: **56 files and 1,084 tests passed**.
 - Frontend type-aware lint and type checking: **passed**.
 - Frontend production build: **passed** (480 files processed and no circular
   dependency found).
 - Live local smoke test: the result page rendered the stored-history review,
   seven canvas charts, keyboard heatmap, confusion network, clusters, outlooks,
   and personalized practice content.
+- Diagnostics toggle smoke test: the off state used the active theme's subdued
+  color with `aria-pressed="false"`; the on state used its main color with
+  `aria-pressed="true"`; both actions updated the tooltip and panel immediately.
 - Feature-specific browser errors: **none observed**.
 
 The build still reports upstream/environment warnings for stale Browserslist

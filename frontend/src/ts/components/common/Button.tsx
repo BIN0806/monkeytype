@@ -27,6 +27,7 @@ export type ButtonProps = BaseProps & {
   sameTarget?: true;
   disabled?: boolean;
   danger?: boolean;
+  "aria-pressed"?: boolean;
 };
 
 type AnchorProps = BaseProps & {
@@ -97,6 +98,7 @@ export function Button(props: ButtonProps | AnchorProps): JSXElement {
           {...balloonHtmlProps()}
           {...(props["router-link"] ? { "router-link": "" } : {})}
           disabled={props.disabled ?? false}
+          aria-pressed={(props as ButtonProps)["aria-pressed"]}
           data-ui-variant={variant()}
           data-ui-element="button"
           tabIndex={props.tabIndex ?? 0}

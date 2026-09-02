@@ -61,9 +61,10 @@ export function TypingDiagnostics() {
     });
   };
 
-  const enable = (): void => {
-    setDiagnosticsEnabled(true);
-    void captureCurrentTest();
+  const toggleDiagnostics = (): void => {
+    const enabled = !getDiagnosticsEnabled();
+    setDiagnosticsEnabled(enabled);
+    if (enabled) void captureCurrentTest();
   };
 
   const practice = (): void => {
@@ -83,13 +84,20 @@ export function TypingDiagnostics() {
               Private typing-pattern analysis stored only in this browser.
             </div>
           </div>
-          <Show when={getDiagnosticsEnabled()}>
-            <Button
-              variant="text"
-              text="pause collection"
-              onClick={() => setDiagnosticsEnabled(false)}
-            />
-          </Show>
+          <Button
+            variant="text"
+            class="text-xl"
+            active={getDiagnosticsEnabled()}
+            aria-pressed={getDiagnosticsEnabled()}
+            fa={{ icon: "fa-stethoscope", fixedWidth: true }}
+            balloon={{
+              text: getDiagnosticsEnabled()
+                ? "turn typing diagnostics off"
+                : "turn typing diagnostics on",
+              position: "left",
+            }}
+            onClick={toggleDiagnostics}
+          />
         </div>
 
         <Show
@@ -101,12 +109,8 @@ export function TypingDiagnostics() {
                 difficult characters, and letter pairs. Diagnostic data is never
                 uploaded.
               </div>
-              <div>
-                <Button
-                  text="enable local diagnostics"
-                  fa={{ icon: "fa-chart-area" }}
-                  onClick={enable}
-                />
+              <div class="text-sm text-sub">
+                Select the diagnostics icon above to turn local analysis on.
               </div>
             </div>
           }
