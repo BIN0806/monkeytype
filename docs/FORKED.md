@@ -3,7 +3,7 @@
 ## Review status
 
 This document is the review record for the uncommitted
-`codex/typing-diagnostics` branch in the `BIN0806/monkeytype` fork. The work
+`feature/typing-diagnostics` branch in the `BIN0806/monkeytype` fork. The work
 described here must be read and approved before it is committed or pushed.
 
 - [ ] I reviewed the captured data and local-storage behavior.
