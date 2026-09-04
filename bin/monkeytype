@@ -1,0 +1,15 @@
+#!/bin/zsh
+
+set -euo pipefail
+
+readonly project_root="${${0:A}:h:h}"
+readonly node_version="$(<"$project_root/.nvmrc")"
+
+if ! command -v fnm >/dev/null; then
+  print -u2 "Monkeytype requires fnm to activate Node $node_version."
+  exit 1
+fi
+
+cd "$project_root"
+
+exec fnm exec --using "$node_version" -- corepack pnpm --dir frontend exec vite dev --host localhost --open "$@"
