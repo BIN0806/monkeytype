@@ -357,7 +357,8 @@ export default defineConfig(({ mode }): UserConfig => {
         : [
             {
               find: /\/constants\/firebase-config$/,
-              replacement: "/constants/firebase-config-live",
+              // The portal build provides typing practice without account features.
+              replacement: "/constants/firebase-config-example",
             },
           ],
     },
