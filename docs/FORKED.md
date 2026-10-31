@@ -190,6 +190,7 @@ keyboard behavior and cannot diagnose dyslexia or another condition.
 | `frontend/__tests__/diagnostics/analyzer.spec.ts` | Tests event extraction, profiling, comparisons, and practice selection |
 | `frontend/__tests__/diagnostics/advanced-analyzer.spec.ts` | Tests prediction, hesitation, input balance, error clustering, cascades, forecasts, and recommendations |
 | `frontend/__tests__/components/common/Button.spec.tsx` | Tests reactive accessibility state for toggle buttons |
+| `bin/monkeytype` | Starts and opens the local frontend from any terminal directory using the pinned Node runtime |
 | `docs/FORKED.md` | Records the fork's behavior, data use, calculations, limitations, files, and verification |
 
 ## Validation completed
@@ -207,6 +208,9 @@ The implementation was checked with the repository-pinned Node 24.11.0 and pnpm
 - Diagnostics toggle smoke test: the off state used the active theme's subdued
   color with `aria-pressed="false"`; the on state used its main color with
   `aria-pressed="true"`; both actions updated the tooltip and panel immediately.
+- Global launcher smoke test: `monkeytype --port 3012 --strictPort` was invoked
+  from `/private/tmp`; Vite started successfully and opened the temporary local
+  URL using the pinned runtime. The test server was then stopped.
 - Feature-specific browser errors: **none observed**.
 
 The build still reports upstream/environment warnings for stale Browserslist
@@ -223,6 +227,19 @@ pnpm --filter @monkeytype/frontend lint
 pnpm --filter @monkeytype/frontend build
 pnpm --filter @monkeytype/frontend dev
 ```
+
+## Local launcher
+
+Running `monkeytype` from any terminal directory starts the frontend development
+server and opens its local URL in the default browser. The launcher uses the
+repository-pinned Node 24.11.0 runtime without changing the terminal's active
+Node installation. Extra Vite options can be appended, such as
+`monkeytype --port 3001`.
+
+The command is implemented by `bin/monkeytype` in this fork and exposed through
+the existing `~/.local/bin` command path with a symbolic link. It resolves the
+repository through that link and reads `.nvmrc`, so moving the checkout or
+updating the pinned Node version does not require editing the launcher.
 
 ## Known limitations and next steps
 

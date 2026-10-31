@@ -1,0 +1,141 @@
+#!/bin/zsh
+
+set -u
+
+readonly project_root="${${0:A}:h:h}"
+readonly frontend_dir="$project_root/frontend"
+readonly node_version="$(<"$project_root/.nvmrc")"
+readonly state_dir="/tmp/monkeytype-${UID:-user}"
+readonly port="${MONKEYTYPE_PORT:-3000}"
+readonly pid_file="$state_dir/server-${port}.pid"
+readonly log_file="$state_dir/server-${port}.log"
+readonly url="http://localhost:${port}"
+
+usage() {
+  print -- 'Usage: monkeytype [start|stop|restart|status|logs]'
+  print -- ''
+  print -- '  start    Start Monkeytype and open it in your browser (default)'
+  print -- '  stop     Stop the background development server'
+  print -- '  restart  Restart the server and open Monkeytype'
+  print -- '  status   Show whether the server is running'
+  print -- '  logs     Follow the server log (Ctrl-C to exit)'
+  print -- ''
+  print -- 'Set MONKEYTYPE_PORT to use a different port, for example:'
+  print -- '  MONKEYTYPE_PORT=3001 monkeytype'
+}
+
+server_pid() {
+  [[ -f "$pid_file" ]] && <"$pid_file"
+}
+
+is_running() {
+  local running_pid="$(server_pid)"
+  [[ -n "$running_pid" ]] && kill -0 "$running_pid" 2>/dev/null
+}
+
+is_ready() {
+  command -v curl >/dev/null 2>&1 && curl --silent --fail --output /dev/null "$url"
+}
+
+open_app() {
+  if command -v open >/dev/null 2>&1; then
+    open "$url"
+  else
+    print -- "Open $url in your browser."
+  fi
+}
+
+start_app() {
+  if [[ ! -x "$frontend_dir/node_modules/.bin/vite" ]]; then
+    print -u2 -- "Monkeytype dependencies are not installed in $frontend_dir."
+    exit 1
+  fi
+  if ! command -v fnm >/dev/null 2>&1; then
+    print -u2 -- "Monkeytype requires fnm to activate Node $node_version."
+    exit 1
+  fi
+  if is_running; then
+    print -- "Monkeytype is already running at $url (PID $(server_pid))."
+    open_app
+    return
+  fi
+  if is_ready; then
+    print -u2 -- "Port $port is already being used by another application."
+    print -u2 -- 'Try: MONKEYTYPE_PORT=3001 monkeytype'
+    exit 1
+  fi
+
+  mkdir -p "$state_dir"
+  cd "$project_root" || exit 1
+  nohup fnm exec --using "$node_version" -- corepack pnpm --dir frontend exec vite dev --host localhost --port "$port" --strictPort >"$log_file" 2>&1 </dev/null &
+  local started_pid=$!
+  print -- "$started_pid" >"$pid_file"
+
+  print -- "Starting Monkeytype at $url..."
+  local attempt=0
+  while (( attempt < 60 )); do
+    if is_ready; then
+      print -- 'Monkeytype is ready. Opening your browser.'
+      open_app
+      return
+    fi
+    if ! kill -0 "$started_pid" 2>/dev/null; then
+      break
+    fi
+    sleep 0.5
+    (( attempt++ ))
+  done
+
+  print -u2 -- 'Monkeytype did not start successfully. Recent log output:'
+  tail -n 30 "$log_file" >&2
+  exit 1
+}
+
+stop_app() {
+  if ! is_running; then
+    print -- 'Monkeytype is not running.'
+    rm -f "$pid_file"
+    return
+  fi
+
+  local running_pid="$(server_pid)"
+  kill "$running_pid"
+  local attempt=0
+  while kill -0 "$running_pid" 2>/dev/null && (( attempt < 20 )); do
+    sleep 0.25
+    (( attempt++ ))
+  done
+
+  if kill -0 "$running_pid" 2>/dev/null; then
+    print -- "Server is still stopping (PID $running_pid)."
+  else
+    rm -f "$pid_file"
+    print -- 'Monkeytype stopped.'
+  fi
+}
+
+show_status() {
+  if is_running; then
+    print -- "Monkeytype is running at $url (PID $(server_pid))."
+  else
+    print -- 'Monkeytype is not running.'
+  fi
+}
+
+show_logs() {
+  if [[ ! -f "$log_file" ]]; then
+    print -u2 -- 'No Monkeytype log exists yet. Start the app first.'
+    exit 1
+  fi
+  tail -f "$log_file"
+}
+
+case "${1:-start}" in
+  start) start_app ;;
+  stop) stop_app ;;
+  restart) stop_app; start_app ;;
+  status) show_status ;;
+  logs) show_logs ;;
+  -h|--help|help) usage ;;
+  *) usage >&2; exit 2 ;;
+esac
