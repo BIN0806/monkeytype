@@ -1,3 +1,5 @@
+import "./portal-exit";
+
 // register signal tracking hook before any signals are created
 import "./dev/signal-tracker";
 
@@ -36,20 +38,6 @@ import { mountComponents } from "./components/mount";
 import "./ready";
 import { setVersion } from "./states/core";
 import { loadFromLocalStorage } from "./config/lifecycle";
-
-if (window.parent !== window) {
-  window.addEventListener(
-    "keydown",
-    (event) => {
-      if (event.key !== "Escape") return;
-      const parentOrigin = document.referrer
-        ? new URL(document.referrer).origin
-        : "*";
-      window.parent.postMessage("dungeon-practice:exit-command", parentOrigin);
-    },
-    true,
-  );
-}
 
 import "./input/hotkeys";
 import { showModal } from "./states/modals";
