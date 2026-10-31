@@ -1,0 +1,6 @@
+{
+  "framework": "vite",
+  "installCommand": "pnpm install --frozen-lockfile",
+  "buildCommand": "pnpm exec turbo run build --filter=@monkeytype/frontend",
+  "outputDirectory": "frontend/dist"
+}
